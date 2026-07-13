@@ -50,19 +50,47 @@ WLC_PASSWORD=changeme
 WLC_VERIFY_SSL=false
 ```
 
-Run it (stdio by default): `uv run wlc-mcp`. Or register it in an MCP client:
+## How to use this
+
+Run standalone (stdio): `uv run wlc-mcp` — or register it in any MCP client:
 
 ```json
 { "mcpServers": { "wlc": { "command": "uv",
     "args": ["run", "--directory", "/path/to/wlc-mcp", "wlc-mcp"] } } }
 ```
 
+It's built to be driven by an AI agent. In the
+[cml-mcp](https://github.com/dr-stutters/cml-mcp) lab suite it's wired in as the
+`wlc` server, owned by the **wireless-engineer** agent (tool prefix
+`mcp__wlc__*`) — wireless/WLC work in lab requests fans out to it automatically,
+and the validated wireless NAC lab rebuilds from that repo's
+`Custom Designs/Wireless NAC/` runbook + topology spec. Standalone, just
+describe what you want:
+
+> "Point AAA at ISE 198.18.134.35 (key WLCsecret123) and create a
+> WPA2-Enterprise WLAN 'corp' using it."
+
+> "List the WLANs and show me which policy tag maps 'corp' to its policy profile."
+
+> "What's the RESTCONF/yang-management state — is the box ready?"
+
+Call **`wlc_check`** first: RESTCONF is served by nginx and lags the C9800 boot
+by minutes, so a fresh controller answers pings long before the API is up.
+
+**Validated live** against a C9800-CL on IOS-XE 17.18 (CML): RESTCONF probe,
+WLAN + RADIUS/AAA creation via the dedicated tools, and the full config path of
+the wireless 802.1X NAC build — `test aaa … new-code` from the controller
+returned Access-Accept from ISE 3.5.
+
 ## Notes
 
 - **Discover exact YANG paths from the box** with `wlc_list_models` + `wlc_restconf_call`
-  — the wireless models are large and leaf names vary by IOS-XE release; the dedicated
-  create tools use documented shapes but confirm against your version if a write is
-  rejected (GET an existing object to see the shape).
+  — the wireless models are large and leaf names vary by IOS-XE release. The dedicated
+  create tools' bodies are validated against IOS-XE **17.18** (WLAN + RADIUS writes
+  accepted as-is); on other releases, if a write is rejected, GET an existing object
+  to see the real shape and use `wlc_restconf_call`.
+- **C9800-CL mgmt-plane gotcha (CML):** the Gi ports are L2 switchports — the mgmt IP
+  goes on the `Vlan1` SVI, plus a default route, or RESTCONF never answers off-subnet.
 - **CML caveat:** CML's simulated `wireless-ap` runs hostapd, which **doesn't speak
   CAPWAP**, so it never joins a C9800 — a CML C9800 has no live APs/clients (the
   `*-oper` tools return empty). This server still manages the controller's full config;
@@ -70,9 +98,18 @@ Run it (stdio by default): `uv run wlc-mcp`. Or register it in an MCP client:
 
 ## Test
 
-`tests/smoke_test.py` runs a live read pass (RESTCONF probe, device info, WLANs,
-RADIUS servers, model list) against the box in `.env`:
-
 ```bash
-uv run python tests/smoke_test.py
+uv run pytest                         # unit tests - no WLC needed (run in CI)
+uv run python tests/smoke_test.py     # live read pass against the box in .env
 ```
+
+The unit tests mock the HTTP layer (yang-data headers, RESTCONF error
+extraction, path building). The smoke test runs a live read pass (RESTCONF
+probe, device info, WLANs, RADIUS servers, model list).
+
+## Security notes
+
+`.env` is gitignored — never commit credentials. RESTCONF runs as the priv-15
+user you configure — use a dedicated account. TLS verification is off by
+default for the C9800's self-signed cert; set `WLC_VERIFY_SSL=true` against a
+trusted CA.
