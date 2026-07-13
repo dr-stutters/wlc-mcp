@@ -1,0 +1,36 @@
+[project]
+name = "wlc-mcp"
+version = "0.1.0"
+description = "MCP server for the Cisco Catalyst 9800 Wireless LAN Controller via RESTCONF (IOS-XE YANG)"
+requires-python = ">=3.11"
+dependencies = [
+    "mcp>=1.2.0",
+    "httpx>=0.27.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.scripts]
+wlc-mcp = "wlc_mcp.server:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.15.21",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/wlc_mcp"]
+
+[tool.pytest.ini_options]
+# Only collect the WLC-free unit tests (test_*.py). The live smoke suite is
+# smoke_test.py and is run directly.
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+filterwarnings = ["ignore::ResourceWarning"]
+
+[tool.ruff]
+line-length = 100
