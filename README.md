@@ -74,6 +74,9 @@ describe what you want:
 
 > "What's the RESTCONF/yang-management state — is the box ready?"
 
+See **[EXAMPLE_PROMPT.md](EXAMPLE_PROMPT.md)** for a full end-to-end scenario plus
+focused per-area prompts (WLANs, AAA/RADIUS→ISE, tags/profiles, oper state, discovery).
+
 Call **`wlc_check`** first: RESTCONF is served by nginx and lags the C9800 boot
 by minutes, so a fresh controller answers pings long before the API is up.
 
