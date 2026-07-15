@@ -43,6 +43,8 @@ On the **C9800**: `aaa new-model`, a privilege-15 local user, `ip http secure-se
 `show platform software yang-management process`) and can take a few minutes to come
 up after boot. Then copy `.env.example` to `.env`:
 
+> **Suite users:** these values can instead live in a shared `../.env` one level above the repos, read by every companion MCP — precedence: process env > this repo's `.env` > the shared `../.env`. See the [cml-mcp](https://github.com/dr-stutters/cml-mcp) hub.
+
 ```ini
 WLC_URL=https://192.0.2.70
 WLC_USERNAME=admin
