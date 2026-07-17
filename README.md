@@ -7,9 +7,28 @@ over **RESTCONF** (IOS-XE YANG models, HTTPS + HTTP Basic auth). Built with Fast
 Companion to [cml-mcp](https://github.com/dr-stutters/cml-mcp) and the
 [Firepower](https://github.com/dr-stutters/firepower-mcp),
 [ISE](https://github.com/dr-stutters/ise-mcp),
-[Windows](https://github.com/dr-stutters/windows-mcp) and
-[Splunk](https://github.com/dr-stutters/splunk-mcp) MCPs — the wireless piece of the
-Cisco lab stack. Usable standalone against any C9800.
+[Windows](https://github.com/dr-stutters/windows-mcp),
+[Splunk](https://github.com/dr-stutters/splunk-mcp) and
+[Catalyst Center](https://github.com/dr-stutters/catalyst-center-mcp) MCPs — the wireless
+piece of the Cisco lab stack. Usable standalone against any C9800.
+
+## In the suite — the WLC's integration points
+
+Edges built/validated (or on the roadmap) in the [cml-mcp](https://github.com/dr-stutters/cml-mcp)
+suite — see the [suite integration map](https://github.com/dr-stutters/cml-mcp#suite-integration-map):
+
+- **WLC → ISE (AAA/RADIUS)** ([ise-mcp](https://github.com/dr-stutters/ise-mcp)) — the C9800's
+  WLANs point their 802.1X method lists at ISE; the WLC is onboarded as an ISE NAD. **Wireless
+  802.1X → ISE is proven two ways** vs. ISE 3.5: the C9800 config path *and* a live hostapd AP ↔
+  wpa_supplicant client returning Access-Accept.
+- **WLC ↔ Catalyst Center** ([catalyst-center-mcp](https://github.com/dr-stutters/catalyst-center-mcp),
+  roadmap) — C9800 into CatC inventory + fabric WLC role; SSID/tag design pushed from CatC.
+- **WLC → Splunk** ([splunk-mcp](https://github.com/dr-stutters/splunk-mcp), roadmap) —
+  C9800 syslog/telemetry into the SIEM.
+
+> **CML caveat:** CML's simulated `wireless-ap` runs hostapd and **cannot CAPWAP-join** a C9800,
+> so a CML C9800 has no live APs/clients — this server still manages its full config; live
+> wireless 802.1X in CML is the separate hostapd + wpa_supplicant path.
 
 ## What it does
 
